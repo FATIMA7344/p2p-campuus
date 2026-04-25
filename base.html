@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Peer2Peer Campus{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+{% if session.user_id %}
+<div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">P2P</div>
+            <div class="logo-text">
+                <span class="logo-main">Peer2Peer Campus</span>
+                <span class="logo-sub">Plateforme de partage des compétences ENCG-M</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('accueil') }}" class="nav-item {% if request.endpoint == 'accueil' %}active{% endif %}">
+                <i class="fas fa-home"></i><span>Accueil</span>
+            </a>
+            <a href="{{ url_for('profil') }}" class="nav-item {% if request.endpoint in ('profil',) %}active{% endif %}">
+                <i class="fas fa-user"></i><span>Profil</span>
+            </a>
+            <a href="{{ url_for('missions') }}" class="nav-item {% if request.endpoint == 'missions' %}active{% endif %}">
+                <i class="fas fa-bullseye"></i><span>Mission Board</span>
+            </a>
+            <a href="{{ url_for('messages') }}" class="nav-item {% if request.endpoint in ('messages', 'conversation') %}active{% endif %}">
+                <i class="fas fa-comment-dots"></i><span>Messages</span>
+                {% if notifs and notifs > 0 %}<span class="badge">{{ notifs }}</span>{% endif %}
+            </a>
+            <a href="{{ url_for('wallet') }}" class="nav-item {% if request.endpoint == 'wallet' %}active{% endif %}">
+                <i class="fas fa-wallet"></i><span>Wallet</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">{{ user.prenom[0] }}{{ user.nom[0] }}</div>
+                <div>
+                    <div class="user-name">{{ user.prenom }} {{ user.nom }}</div>
+                    <div class="user-filiere">{{ user.filiere }}</div>
+                </div>
+            </div>
+            <a href="{{ url_for('logout') }}" class="logout-btn"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }}">{{ msg }} <span class="close-alert" onclick="this.parentElement.remove()">×</span></div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+</div>
+{% else %}
+    {% block auth_content %}{% endblock %}
+{% endif %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

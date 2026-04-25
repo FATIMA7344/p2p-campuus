@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Wallet – Peer2Peer Campus{% endblock %}
+{% block content %}
+<div class="wallet-page">
+    <div class="page-header">
+        <h1><i class="fas fa-wallet"></i> Wallet</h1>
+        <button class="btn btn-primary" onclick="toggleModal('sendModal')">
+            <i class="fas fa-paper-plane"></i> Envoyer des crédits
+        </button>
+    </div>
+
+    <!-- Tableau de bord -->
+    <div class="wallet-dashboard">
+        <div class="wallet-card balance">
+            <div class="wc-icon"><i class="fas fa-coins"></i></div>
+            <div class="wc-content">
+                <div class="wc-label">Solde actuel</div>
+                <div class="wc-value">{{ user.credits }}</div>
+                <div class="wc-unit">crédits</div>
+            </div>
+        </div>
+        <div class="wallet-card earned">
+            <div class="wc-icon"><i class="fas fa-arrow-down"></i></div>
+            <div class="wc-content">
+                <div class="wc-label">Total gagné</div>
+                <div class="wc-value">{{ user.total_gagne }}</div>
+                <div class="wc-unit">crédits</div>
+            </div>
+        </div>
+        <div class="wallet-card spent">
+            <div class="wc-icon"><i class="fas fa-arrow-up"></i></div>
+            <div class="wc-content">
+                <div class="wc-label">Total dépensé</div>
+                <div class="wc-value">{{ user.total_depense }}</div>
+                <div class="wc-unit">crédits</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historique des transactions -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-history"></i> Historique des transactions</h3>
+        </div>
+        <div class="transactions-table">
+            {% if transactions %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Type</th>
+                        <th>Montant</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transactions %}
+                    <tr>
+                        <td>
+                            {% if t.expediteur_id == user.id %}
+                                <div class="tx-user">
+                                    <div class="mini-avatar">{{ t.destinataire.prenom[0] }}{{ t.destinataire.nom[0] }}</div>
+                                    <a href="{{ url_for('profil', user_id=t.destinataire.id) }}">{{ t.destinataire.prenom }} {{ t.destinataire.nom }}</a>
+                                </div>
+                            {% else %}
+                                <div class="tx-user">
+                                    <div class="mini-avatar">{{ t.expediteur.prenom[0] }}{{ t.expediteur.nom[0] }}</div>
+                                    <a href="{{ url_for('profil', user_id=t.expediteur.id) }}">{{ t.expediteur.prenom }} {{ t.expediteur.nom }}</a>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if t.expediteur_id == user.id %}
+                            <span class="tx-badge sent"><i class="fas fa-arrow-up"></i> Envoyé</span>
+                            {% else %}
+                            <span class="tx-badge received"><i class="fas fa-arrow-down"></i> Reçu</span>
+                            {% endif %}
+                        </td>
+                        <td class="tx-amount {% if t.expediteur_id == user.id %}neg{% else %}pos{% endif %}">
+                            {% if t.expediteur_id == user.id %}-{% else %}+{% endif %}{{ t.montant }}
+                        </td>
+                        <td class="tx-date">{{ t.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-receipt"></i>
+                <p>Aucune transaction pour l'instant.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Envoyer des crédits – 3 étapes -->
+<div class="modal" id="sendModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-paper-plane"></i> Envoyer des crédits</h3>
+            <button onclick="toggleModal('sendModal')" class="close-btn">×</button>
+        </div>
+
+        <!-- Étapes -->
+        <div class="steps-indicator">
+            <div class="step active" id="step-ind-1">1. Vérification</div>
+            <div class="step-arrow">→</div>
+            <div class="step" id="step-ind-2">2. Destinataire</div>
+            <div class="step-arrow">→</div>
+            <div class="step" id="step-ind-3">3. Confirmation</div>
+        </div>
+
+        <form method="POST" action="{{ url_for('envoyer_credits') }}" id="sendForm">
+            <!-- Étape 1 -->
+            <div id="sendStep1">
+                <p class="step-title">Quel montant voulez-vous envoyer ?</p>
+                <div class="form-group">
+                    <label>Votre solde : <strong>{{ user.credits }} crédits</strong></label>
+                    <input type="number" id="montantInput" name="montant" min="1" max="{{ user.credits }}" value="10" required>
+                </div>
+                <div id="soldeError" class="alert alert-danger" style="display:none">
+                    ❌ Solde insuffisant ! Vous n'avez que {{ user.credits }} crédits.
+                </div>
+                <button type="button" class="btn btn-primary btn-full" onclick="checkSolde()">Suivant →</button>
+            </div>
+
+            <!-- Étape 2 -->
+            <div id="sendStep2" style="display:none">
+                <p class="step-title">Choisir le destinataire :</p>
+                <div class="form-group">
+                    <label>Rechercher un étudiant</label>
+                    <input type="text" id="userSearch" placeholder="Nom ou email..." autocomplete="off">
+                    <div id="userResults" class="user-results"></div>
+                </div>
+                <input type="hidden" name="destinataire_id" id="destId">
+                <div id="destSelected" class="dest-preview" style="display:none"></div>
+                <button type="button" class="btn btn-primary btn-full" onclick="goToStep3()" id="toStep3Btn" disabled>Suivant →</button>
+            </div>
+
+            <!-- Étape 3 -->
+            <div id="sendStep3" style="display:none">
+                <div class="confirm-summary">
+                    <i class="fas fa-check-circle"></i>
+                    <h4>Confirmer le transfert</h4>
+                    <p>Vous allez envoyer <strong id="confirmMontant"></strong> crédits à <strong id="confirmDest"></strong>.</p>
+                    <p class="confirm-note">Cette action est irréversible.</p>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">✅ Confirmer l'envoi</button>
+                <button type="button" class="btn btn-secondary btn-full" onclick="goToStep(2)">← Retour</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

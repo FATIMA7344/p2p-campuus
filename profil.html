@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block title %}Profil – {{ profil_user.prenom }} {{ profil_user.nom }}{% endblock %}
+{% block content %}
+<div class="profil-page">
+    <!-- Header du profil -->
+    <div class="profil-header">
+        <div class="profil-avatar-lg">{{ profil_user.prenom[0] }}{{ profil_user.nom[0] }}</div>
+        <div class="profil-info">
+            <h2>{{ profil_user.prenom }} {{ profil_user.nom }}</h2>
+            <div class="profil-meta">
+                <span><i class="fas fa-graduation-cap"></i> {{ profil_user.filiere }}</span>
+                <span><i class="fas fa-calendar"></i> {{ profil_user.annee_etude }}</span>
+                <span><i class="fas fa-envelope"></i> {{ profil_user.email }}</span>
+            </div>
+            {% if avg_note > 0 %}
+            <div class="profil-stars">
+                {% for i in range(1, 6) %}
+                    {% if i <= avg_note %}
+                        <i class="fas fa-star star-filled"></i>
+                    {% else %}
+                        <i class="far fa-star star-empty"></i>
+                    {% endif %}
+                {% endfor %}
+                <span class="avg-note">{{ avg_note }}/5 ({{ evaluations|length }} avis)</span>
+            </div>
+            {% endif %}
+            {% if profil_user.bio %}
+            <p class="profil-bio">{{ profil_user.bio }}</p>
+            {% endif %}
+        </div>
+        <div class="profil-actions">
+            {% if is_own %}
+            <button class="btn btn-primary" onclick="toggleModal('editModal')">
+                <i class="fas fa-edit"></i> Modifier le profil
+            </button>
+            {% else %}
+            <a href="{{ url_for('nouveau_message', user_id=profil_user.id) }}" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> Envoyer une demande
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="profil-body">
+        <!-- Colonne gauche -->
+        <div class="profil-col">
+            <!-- Compétences -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-star"></i> Compétences</h3>
+                    {% if is_own %}
+                    <button class="btn btn-sm" onclick="toggleModal('addCompModal')">+ Ajouter</button>
+                    {% endif %}
+                </div>
+                <div class="competences-list">
+                    {% for c in profil_user.competences %}
+                    <div class="comp-tag">
+                        {{ c.nom }}
+                        {% if is_own %}
+                        <a href="{{ url_for('supprimer_competence', cid=c.id) }}" class="comp-delete">×</a>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="empty-msg">Aucune compétence ajoutée.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Portfolio -->
+            {% if profil_user.portfolio %}
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-briefcase"></i> Portfolio</h3></div>
+                <div class="portfolio-content">{{ profil_user.portfolio }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Colonne droite -->
+        <div class="profil-col">
+            <!-- Évaluations -->
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-comment-alt"></i> Évaluations</h3></div>
+                {% if not is_own %}
+                <form method="POST" action="{{ url_for('evaluer', user_id=profil_user.id) }}" class="eval-form">
+                    <div class="star-picker" id="starPicker">
+                        {% for i in range(1, 6) %}
+                        <input type="radio" name="note" id="star{{ i }}" value="{{ i }}" {% if i == 5 %}checked{% endif %}>
+                        <label for="star{{ i }}"><i class="fas fa-star"></i></label>
+                        {% endfor %}
+                    </div>
+                    <textarea name="commentaire" placeholder="Laisser un commentaire..." rows="3"></textarea>
+                    <button type="submit" class="btn btn-primary btn-sm">Envoyer l'évaluation</button>
+                </form>
+                {% endif %}
+                <div class="evals-list">
+                    {% for ev in evaluations %}
+                    <div class="eval-item">
+                        <div class="eval-header">
+                            <div class="eval-avatar">{{ ev.evaluateur.prenom[0] }}{{ ev.evaluateur.nom[0] }}</div>
+                            <div>
+                                <div class="eval-name">{{ ev.evaluateur.prenom }} {{ ev.evaluateur.nom }}</div>
+                                <div class="eval-date">{{ ev.created_at.strftime('%d/%m/%Y') }}</div>
+                            </div>
+                            <div class="eval-stars">
+                                {% for i in range(ev.note) %}<i class="fas fa-star star-filled"></i>{% endfor %}
+                                {% for i in range(5 - ev.note) %}<i class="far fa-star star-empty"></i>{% endfor %}
+                            </div>
+                        </div>
+                        {% if ev.commentaire %}
+                        <p class="eval-comment">{{ ev.commentaire }}</p>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="empty-msg">Aucune évaluation pour l'instant.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Modifier profil -->
+{% if is_own %}
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Modifier le profil</h3>
+            <button onclick="toggleModal('editModal')" class="close-btn">×</button>
+        </div>
+        <form method="POST" action="{{ url_for('modifier_profil') }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" name="nom" value="{{ profil_user.nom }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Prénom</label>
+                    <input type="text" name="prenom" value="{{ profil_user.prenom }}" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Année d'étude</label>
+                    <select name="annee_etude">
+                        {% for a in ['1ère année','2ème année','3ème année','4ème année','5ème année'] %}
+                        <option value="{{ a }}" {% if profil_user.annee_etude == a %}selected{% endif %}>{{ a }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Filière</label>
+                    <select name="filiere">
+                        {% for f in ['Finance','CAC','Logistique','BA','MRH','MAC','CI'] %}
+                        <option value="{{ f }}" {% if profil_user.filiere == f %}selected{% endif %}>{{ f }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Bio</label>
+                <textarea name="bio" rows="3" placeholder="Parlez de vous...">{{ profil_user.bio }}</textarea>
+            </div>
+            <div class="form-group">
+                <label>Portfolio / Réalisations</label>
+                <textarea name="portfolio" rows="4" placeholder="Décrivez vos projets, liens GitHub...">{{ profil_user.portfolio }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Enregistrer</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Ajouter compétence -->
+<div class="modal" id="addCompModal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h3>Ajouter une compétence</h3>
+            <button onclick="toggleModal('addCompModal')" class="close-btn">×</button>
+        </div>
+        <form method="POST" action="{{ url_for('ajouter_competence') }}">
+            <div class="form-group">
+                <label>Compétence</label>
+                <input type="text" name="competence" placeholder="Ex: Analyse de données, Montage vidéo..." required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Ajouter</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Mission Board – Peer2Peer Campus{% endblock %}
+{% block content %}
+<div class="missions-page">
+    <div class="page-header">
+        <div>
+            <h1><i class="fas fa-bullseye"></i> Mission Board</h1>
+            <p>Cherchez une compétence ou publiez votre offre / demande</p>
+        </div>
+        <button class="btn btn-primary" onclick="toggleModal('newMissionModal')">
+            <i class="fas fa-plus"></i> Publier une mission
+        </button>
+    </div>
+
+    <!-- Filtres -->
+    <form method="GET" class="search-bar">
+        <div class="search-input-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" name="search" placeholder="Rechercher une compétence, un service..." value="{{ search }}">
+        </div>
+        <div class="filter-btns">
+            <a href="{{ url_for('missions') }}" class="filter-btn {% if not type_filter %}active{% endif %}">Tout</a>
+            <a href="{{ url_for('missions', type='offre', search=search) }}" class="filter-btn offre {% if type_filter == 'offre' %}active{% endif %}">Offres</a>
+            <a href="{{ url_for('missions', type='demande', search=search) }}" class="filter-btn demande {% if type_filter == 'demande' %}active{% endif %}">Demandes</a>
+        </div>
+        <button type="submit" class="btn btn-secondary">Rechercher</button>
+    </form>
+
+    <!-- Liste missions -->
+    <div class="missions-grid">
+        {% for m in missions %}
+        <div class="mission-card {{ m.type_mission }}">
+            <div class="mission-top">
+                <span class="mission-badge {{ m.type_mission }}">
+                    {% if m.type_mission == 'offre' %}<i class="fas fa-hand-holding"></i> Offre{% else %}<i class="fas fa-hand-paper"></i> Demande{% endif %}
+                </span>
+                <span class="mission-credits"><i class="fas fa-coins"></i> {{ m.credits }} crédits</span>
+            </div>
+            <h3 class="mission-title">{{ m.titre }}</h3>
+            <p class="mission-desc">{{ m.description[:120] }}{% if m.description|length > 120 %}...{% endif %}</p>
+            <div class="mission-comp"><i class="fas fa-tag"></i> {{ m.competence }}</div>
+            <div class="mission-footer">
+                <a href="{{ url_for('profil', user_id=m.user_id) }}" class="mission-author">
+                    <div class="mini-avatar">{{ m.auteur.prenom[0] }}{{ m.auteur.nom[0] }}</div>
+                    <span>{{ m.auteur.prenom }} {{ m.auteur.nom }}</span>
+                </a>
+                <div class="mission-date">{{ m.created_at.strftime('%d/%m/%Y') }}</div>
+            </div>
+            <div class="mission-actions">
+                {% if m.user_id == user.id %}
+                    <a href="{{ url_for('supprimer_mission', mid=m.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer cette mission ?')">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('conversation', contact_id=m.user_id) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-comment"></i> Contacter
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <p>Aucune mission trouvée.</p>
+            <button class="btn btn-primary" onclick="toggleModal('newMissionModal')">Publier la première mission</button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal: Nouvelle mission -->
+<div class="modal" id="newMissionModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Publier une mission</h3>
+            <button onclick="toggleModal('newMissionModal')" class="close-btn">×</button>
+        </div>
+        <form method="POST" action="{{ url_for('publier_mission') }}">
+            <div class="form-group">
+                <label>Titre de la mission</label>
+                <input type="text" name="titre" placeholder="Ex: Aide en Excel avancé" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Type</label>
+                    <select name="type_mission" required>
+                        <option value="offre">Offre (je propose)</option>
+                        <option value="demande">Demande (je cherche)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Compétence</label>
+                    <input type="text" name="competence" placeholder="Ex: Power BI, Python..." required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" rows="4" placeholder="Décrivez votre offre ou besoin..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Montant de crédits</label>
+                <input type="number" name="credits" min="1" max="500" value="20" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Publier</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

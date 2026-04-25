@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Messages – Peer2Peer Campus{% endblock %}
+{% block content %}
+<div class="messages-page">
+    <div class="page-header">
+        <h1><i class="fas fa-comment-dots"></i> Messages</h1>
+    </div>
+    <div class="contacts-list">
+        {% for contact in contacts %}
+        <a href="{{ url_for('conversation', contact_id=contact.id) }}" class="contact-item">
+            <div class="contact-avatar">{{ contact.prenom[0] }}{{ contact.nom[0] }}</div>
+            <div class="contact-info">
+                <div class="contact-name">{{ contact.prenom }} {{ contact.nom }}</div>
+                <div class="contact-sub">{{ contact.filiere }} – {{ contact.annee_etude }}</div>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-comment-slash"></i>
+            <p>Aucune conversation. Contactez un étudiant depuis les missions ou profils.</p>
+            <a href="{{ url_for('missions') }}" class="btn btn-primary">Explorer les missions</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

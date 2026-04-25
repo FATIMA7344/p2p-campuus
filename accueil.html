@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Accueil – Peer2Peer Campus{% endblock %}
+{% block content %}
+<div class="welcome-page">
+    <div class="welcome-hero">
+        <div class="hero-icon">🎓</div>
+        <h1>Bienvenue sur Peer2Peer Campus 👋</h1>
+        <p class="hero-subtitle">Cette plateforme a été créée dans le but de faciliter les échanges et la collaboration entre les étudiants de l'ENCG Marrakech.</p>
+    </div>
+
+    <div class="welcome-cards">
+        <div class="wcard">
+            <i class="fas fa-share-alt"></i>
+            <h3>Partage de compétences</h3>
+            <p>Elle permet de partager des compétences, de trouver de l'aide dans différentes matières et de favoriser l'entraide entre étudiants.</p>
+        </div>
+        <div class="wcard">
+            <i class="fas fa-users"></i>
+            <h3>Communauté ENCG</h3>
+            <p>Notre objectif est de construire une communauté où chaque étudiant peut apprendre, progresser et contribuer avec ses connaissances.</p>
+        </div>
+        <div class="wcard">
+            <i class="fas fa-coins"></i>
+            <h3>Système de crédits</h3>
+            <p>Gagnez des crédits en aidant vos pairs, et utilisez-les pour accéder aux services des autres étudiants.</p>
+        </div>
+    </div>
+
+    <div class="quick-actions">
+        <a href="{{ url_for('missions') }}" class="qa-btn">
+            <i class="fas fa-bullseye"></i> Explorer les missions
+        </a>
+        <a href="{{ url_for('profil') }}" class="qa-btn secondary">
+            <i class="fas fa-user-edit"></i> Compléter mon profil
+        </a>
+    </div>
+
+    <div class="credits-banner">
+        <i class="fas fa-wallet"></i>
+        <span>Votre solde actuel : <strong>{{ user.credits }} crédits</strong></span>
+        <a href="{{ url_for('wallet') }}">Voir le wallet →</a>
+    </div>
+
+    <div class="welcome-footer">
+        <p class="footer-label">Développé par :</p>
+        <div class="devs">
+            <span>AIT MOHAND FATIMA</span>
+            <span>AIT LEHCEN MOHAMED</span>
+            <span>BENITTO MOHAMED</span>
+            <span>AIJJOU SAFAA</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block auth_content %}
+<div class="auth-page">
+    <div class="auth-left">
+        <div class="auth-brand">
+            <div class="brand-logo">P2P</div>
+            <h1>Peer2Peer Campus</h1>
+            <p>Plateforme de partage des compétences ENCG-M</p>
+        </div>
+        <div class="auth-tagline">
+            <i class="fas fa-gift"></i>
+            <span>50 crédits offerts à l'inscription !</span>
+        </div>
+    </div>
+    <div class="auth-right">
+        <div class="auth-card">
+            <h2>Créer un compte</h2>
+            <p class="auth-subtitle">Rejoignez la communauté ENCG Marrakech.</p>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }}">{{ msg }}</div>
+                {% endfor %}
+            {% endwith %}
+            <form method="POST" action="{{ url_for('register') }}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Nom</label>
+                        <input type="text" name="nom" placeholder="Votre nom" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Prénom</label>
+                        <input type="text" name="prenom" placeholder="Votre prénom" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Email académique</label>
+                    <input type="email" name="email" placeholder="nom@uca.ac.ma" required>
+                    <small class="form-hint">Doit être de la forme @uca.ac.ma</small>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Mot de passe</label>
+                    <input type="password" name="password" placeholder="••••••••" required minlength="6">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-graduation-cap"></i> Année d'étude</label>
+                        <select name="annee_etude" required>
+                            <option value="">-- Choisir --</option>
+                            <option value="1ère année">1ère année</option>
+                            <option value="2ème année">2ème année</option>
+                            <option value="3ème année">3ème année</option>
+                            <option value="4ème année">4ème année</option>
+                            <option value="5ème année">5ème année</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-book"></i> Filière</label>
+                        <select name="filiere" required>
+                            <option value="">-- Choisir --</option>
+                            <option value="Finance">Finance</option>
+                            <option value="CAC">CAC</option>
+                            <option value="Logistique">Logistique</option>
+                            <option value="BA">BA</option>
+                            <option value="MRH">MRH</option>
+                            <option value="MAC">MAC</option>
+                            <option value="CI">CI</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Créer mon compte</button>
+            </form>
+            <div class="auth-switch">
+                Déjà un compte ? <a href="{{ url_for('login') }}">Se connecter</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
