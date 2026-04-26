@@ -407,28 +407,7 @@ def recherche_utilisateur():
         User.id != user.id
     ).limit(5).all()
     return jsonify([{'id': u.id, 'nom': f"{u.prenom} {u.nom}", 'email': u.email} for u in users])
-
 @app.route('/notifications')
-@login_required
-def notifications():
-    user = current_user()
-    notifs = Notification.query.filter_by(user_id=user.id, lu=False).count()
-    notifs_list = Notification.query.filter_by(user_id=user.id).order_by(Notification.created_at.desc()).all()
-    Notification.query.filter_by(user_id=user.id, lu=False).update({'lu': True})
-    db.session.commit()
-    return render_template('notifications.html', user=user, notifs=notifs, notifs_list=notifs_list)
-
-@app.route('/notifications')
-@login_required
-def notifications():
-    user = current_user()
-    notifs = Notification.query.filter_by(user_id=user.id, lu=False).count()
-    notifs_list = Notification.query.filter_by(user_id=user.id).order_by(Notification.created_at.desc()).all()
-    Notification.query.filter_by(user_id=user.id, lu=False).update({'lu': True})
-    db.session.commit()
-    return render_template('notifications.html', user=user, notifs=notifs, notifs_list=notifs_list)
-
-@app.route('/notifications/lire')
 @login_required
 def notifications():
     user = current_user()
