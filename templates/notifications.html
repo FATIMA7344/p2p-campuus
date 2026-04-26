@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-bell"></i> Notifications</h1>
+    {% if notifs_list %}
+    <a href="{{ url_for('lire_notifications') }}" class="btn btn-secondary">
+        Tout marquer comme lu
+    </a>
+    {% endif %}
+</div>
+<div class="contacts-list">
+    {% for n in notifs_list %}
+    <div class="contact-item {% if not n.lu %}notif-unread{% endif %}">
+        <div class="contact-avatar" style="background: var(--accent)">
+            <i class="fas fa-bell"></i>
+        </div>
+        <div class="contact-info">
+            <div class="contact-name">{{ n.message }}</div>
+            <div class="contact-sub">{{ n.created_at.strftime('%d/%m/%Y à %H:%M') }}</div>
+        </div>
+        {% if not n.lu %}
+        <span class="badge" style="background:var(--accent)">Nouveau</span>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-bell-slash"></i>
+        <p>Aucune notification pour l'instant.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
