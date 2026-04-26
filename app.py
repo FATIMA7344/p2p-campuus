@@ -334,13 +334,13 @@ def conversation(contact_id):
         fichier_path = None
         if 'fichier' in request.files:
             f = request.files['fichier']
-            if f and f.filename:
-    upload_result = cloudinary.uploader.upload(
-        f,
-        resource_type='auto'
+    if f and f.filename:
+        upload_result = cloudinary.uploader.upload(
+                   f,
+                   resource_type='auto'
     )
-    fichier_path = upload_result['secure_url']
-        if contenu or fichier_path:
+        fichier_path = upload_result['secure_url']
+if contenu or fichier_path:
             msg = Message(expediteur_id=user.id, destinataire_id=contact_id,
                           contenu=contenu, fichier=fichier_path)
             db.session.add(msg)
