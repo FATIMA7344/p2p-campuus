@@ -334,19 +334,18 @@ def conversation(contact_id):
         fichier_path = None
         if 'fichier' in request.files:
             f = request.files['fichier']
-    if f and f.filename:
-        upload_result = cloudinary.uploader.upload(
-                   f,
-                   resource_type='auto'
-    )
-        fichier_path = upload_result['secure_url']
-if contenu or fichier_path:
+            if f and f.filename:
+                upload_result = cloudinary.uploader.upload(
+                    f,
+                    resource_type='auto'
+                )
+                fichier_path = upload_result['secure_url']
+        if contenu or fichier_path:
             msg = Message(expediteur_id=user.id, destinataire_id=contact_id,
                           contenu=contenu, fichier=fichier_path)
             db.session.add(msg)
             db.session.commit()
         return redirect(url_for('conversation', contact_id=contact_id))
-    # Marquer messages comme lus
     Message.query.filter_by(expediteur_id=contact_id, destinataire_id=user.id, lu=False).update({'lu': True})
     db.session.commit()
     msgs = Message.query.filter(
