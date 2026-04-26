@@ -3,6 +3,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 import os
+import cloudinary
+import cloudinary.uploader
+
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET')
+)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'peer2peer_encg_secret_key_2024'
@@ -326,12 +334,12 @@ def conversation(contact_id):
         fichier_path = None
         if 'fichier' in request.files:
             f = request.files['fichier']
-            if f and f.filename and allowed_file(f.filename):
-                from werkzeug.utils import secure_filename
-                filename = secure_filename(f.filename)
-                unique_name = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{filename}"
-                f.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_name))
-                fichier_path = unique_name
+            if f and f.filename:
+    upload_result = cloudinary.uploader.upload(
+        f,
+        resource_type='auto'
+    )
+    fichier_path = upload_result['secure_url']
         if contenu or fichier_path:
             msg = Message(expediteur_id=user.id, destinataire_id=contact_id,
                           contenu=contenu, fichier=fichier_path)
