@@ -334,12 +334,20 @@ def conversation(contact_id):
         fichier_path = None
         if 'fichier' in request.files:
             f = request.files['fichier']
-            if f and f.filename:
-                upload_result = cloudinary.uploader.upload(
-                    f,
-                    resource_type='auto'
-                )
-                fichier_path = upload_result['secure_url']
+        if f and f.filename:
+            extension = f.filename.rsplit('.', 1)[-1].lower()
+            if extension in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+                resource_type = 'image'
+            elif extension in ['mp4', 'avi', 'mov', 'mkv']:
+                resource_type = 'video'
+            else:
+                resource_type = 'raw'
+            upload_result = cloudinary.uploader.upload(
+                f,
+                resource_type=resource_type,
+                access_mode='public'
+            )
+            fichier_path = upload_result['secure_url']
         if contenu or fichier_path:
             msg = Message(expediteur_id=user.id, destinataire_id=contact_id,
                           contenu=contenu, fichier=fichier_path)
