@@ -191,8 +191,13 @@ def logout():
 def accueil():
     user = current_user()
     notifs = Notification.query.filter_by(user_id=user.id, lu=False).count()
-    return render_template('accueil.html', user=user, notifs=notifs)
-
+    total_etudiants = User.query.count()
+    total_missions = Mission.query.count()
+    total_echanges = Transaction.query.count()
+    return render_template('accueil.html', user=user, notifs=notifs,
+                           total_etudiants=total_etudiants,
+                           total_missions=total_missions,
+                           total_echanges=total_echanges)
 @app.route('/profil')
 @app.route('/profil/<int:user_id>')
 @login_required
