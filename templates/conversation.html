@@ -19,12 +19,23 @@
             <p>{{ msg.contenu }}</p>
             {% endif %}
             {% if msg.fichier %}
-            <div class="msg-file">
-                <a href="{{ msg.fichier }}" target="_blank">
-    <i class="fas fa-paperclip"></i> Ouvrir le fichier
-</a>
-            </div>
-            {% endif %}
+<div class="msg-file">
+    {% set ext = msg.fichier.split('.')[-1].lower() %}
+    {% if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp'] %}
+        <a href="{{ msg.fichier }}" target="_blank">
+            <img src="{{ msg.fichier }}" style="max-width:200px; border-radius:8px;">
+        </a>
+    {% elif ext in ['mp4', 'avi', 'mov'] %}
+        <video controls style="max-width:200px; border-radius:8px;">
+            <source src="{{ msg.fichier }}">
+        </video>
+    {% else %}
+        <a href="{{ msg.fichier }}" target="_blank" download>
+            <i class="fas fa-paperclip"></i> Télécharger le fichier
+        </a>
+    {% endif %}
+</div>
+{% endif %}
             <span class="msg-time">{{ msg.created_at.strftime('%H:%M · %d/%m') }}</span>
         </div>
         {% else %}
