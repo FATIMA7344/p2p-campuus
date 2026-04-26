@@ -408,6 +408,35 @@ def recherche_utilisateur():
     ).limit(5).all()
     return jsonify([{'id': u.id, 'nom': f"{u.prenom} {u.nom}", 'email': u.email} for u in users])
 
+@app.route('/notifications')
+@login_required
+def notifications():
+    user = current_user()
+    notifs = Notification.query.filter_by(user_id=user.id, lu=False).count()
+    notifs_list = Notification.query.filter_by(user_id=user.id).order_by(Notification.created_at.desc()).all()
+    Notification.query.filter_by(user_id=user.id, lu=False).update({'lu': True})
+    db.session.commit()
+    return render_template('notifications.html', user=user, notifs=notifs, notifs_list=notifs_list)
+
+@app.route('/notifications')
+@login_required
+def notifications():
+    user = current_user()
+    notifs = Notification.query.filter_by(user_id=user.id, lu=False).count()
+    notifs_list = Notification.query.filter_by(user_id=user.id).order_by(Notification.created_at.desc()).all()
+    Notification.query.filter_by(user_id=user.id, lu=False).update({'lu': True})
+    db.session.commit()
+    return render_template('notifications.html', user=user, notifs=notifs, notifs_list=notifs_list)
+
+@app.route('/notifications/lire')
+@login_required
+def notifications():
+    user = current_user()
+    notifs = Notification.query.filter_by(user_id=user.id, lu=False).count()
+    notifs_list = Notification.query.filter_by(user_id=user.id).order_by(Notification.created_at.desc()).all()
+    Notification.query.filter_by(user_id=user.id, lu=False).update({'lu': True})
+    db.session.commit()
+    return render_template('notifications.html', user=user, notifs=notifs, notifs_list=notifs_list)
 @app.route('/notifications/lire')
 @login_required
 def lire_notifications():
@@ -415,7 +444,6 @@ def lire_notifications():
     Notification.query.filter_by(user_id=user.id, lu=False).update({'lu': True})
     db.session.commit()
     return redirect(request.referrer or url_for('accueil'))
-
 # ─── INIT DB ────────────────────────────────────────────────────────────────
 
 @app.cli.command('init-db')
