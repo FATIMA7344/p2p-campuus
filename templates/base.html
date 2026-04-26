@@ -7,6 +7,19 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+<!-- Son de notification -->
+<audio id="notifSound" src="{{ url_for('static', filename='notification.mp3') }}" preload="auto"></audio>
+
+<script>
+// Jouer le son si nouvelles notifications
+window.addEventListener('load', function() {
+    const notifCount = {{ notifs if notifs else 0 }};
+    if (notifCount > 0) {
+        const sound = document.getElementById('notifSound');
+        sound.play().catch(e => console.log('Autoplay bloqué'));
+    }
+});
+</script>
 <body>
 {% if session.user_id %}
 <div class="layout">
