@@ -1,9 +1,9 @@
 /* ── Peer2Peer Campus – Style Principal ─────────────────────────── */
 /* Couleurs inspirées du logo ENCG Marrakech (vert & orange) */
 :root {
-  --primary: #1a7a4a;
-  --primary-dark: #145f39;
-  --primary-light: #e8f5ee;
+  --primary: #e8821e;
+  --primary-dark: #c4530e;
+  --primary-light: #fef3e8;
   --accent: #e8821e;
   --accent-light: #fef3e8;
   --text: #1a1a2e;
