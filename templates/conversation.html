@@ -20,9 +20,9 @@
             {% endif %}
             {% if msg.fichier %}
             <div class="msg-file">
-                <a href="{{ msg.fichier }}" target="_blank" download>
-                    <i class="fas fa-paperclip"></i> {{ msg.fichier.split('_', 1)[1] if '_' in msg.fichier else msg.fichier }}
-                </a>
+                <a href="{{ msg.fichier }}" target="_blank">
+    <i class="fas fa-paperclip"></i> Ouvrir le fichier
+</a>
             </div>
             {% endif %}
             <span class="msg-time">{{ msg.created_at.strftime('%H:%M · %d/%m') }}</span>
