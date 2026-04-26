@@ -753,3 +753,7 @@ a { color: inherit; text-decoration: none; }
   .welcome-cards { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr; }
 }
+.notif-unread {
+    background: var(--primary-light);
+    border-left: 3px solid var(--primary);
+}
