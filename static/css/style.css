@@ -771,10 +771,6 @@ a { color: inherit; text-decoration: none; }
     text-align: center;
     border: 1px solid var(--border);
     border-top: 3px solid var(--primary);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    box-shadow: var(--shadow);
 }
 .stat-number {
     font-size: 2.5rem;
