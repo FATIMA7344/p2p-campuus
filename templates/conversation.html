@@ -20,7 +20,7 @@
             {% endif %}
             {% if msg.fichier %}
             <div class="msg-file">
-                <a href="{{ url_for('static', filename='uploads/' + msg.fichier) }}" target="_blank" download>
+                <a href="{{ msg.fichier }}" target="_blank" download>
                     <i class="fas fa-paperclip"></i> {{ msg.fichier.split('_', 1)[1] if '_' in msg.fichier else msg.fichier }}
                 </a>
             </div>
