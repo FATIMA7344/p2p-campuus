@@ -36,6 +36,12 @@
             <a href="{{ url_for('wallet') }}" class="nav-item {% if request.endpoint == 'wallet' %}active{% endif %}">
                 <i class="fas fa-wallet"></i><span>Wallet</span>
             </a>
+        <a href="{{ url_for('lire_notifications') }}" class="nav-item {% if request.endpoint == 'notifications' %}active{% endif %}">
+    <i class="fas fa-bell"></i><span>Notifications</span>
+    {% if notifs and notifs > 0 %}
+    <span class="badge">{{ notifs }}</span>
+    {% endif %}
+</a>
         </nav>
         <div class="sidebar-footer">
             <div class="user-info">
