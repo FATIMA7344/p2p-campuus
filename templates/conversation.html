@@ -71,7 +71,7 @@ window.onload = function() {
     if (chat) chat.scrollTop = chat.scrollHeight;
 };
 </script>
-{% endblock %}
+
 <script>
 function updateStatut() {
     fetch('/api/statut/{{ contact.id }}')
