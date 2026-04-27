@@ -783,3 +783,32 @@ a { color: inherit; text-decoration: none; }
     font-weight: 600;
     margin-top: 0.3rem;
 }
+/* ── Statut en ligne ─────────────────────────────────────────────── */
+.statut-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.4rem;
+    flex-shrink: 0;
+}
+.statut-dot.online {
+    background: #22c55e;
+    box-shadow: 0 0 6px #22c55e;
+    animation: pulse-green 2s infinite;
+}
+.statut-dot.offline {
+    background: #9ca3af;
+}
+.statut-ligne {
+    display: flex;
+    align-items: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+}
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+    70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
