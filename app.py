@@ -5,9 +5,6 @@ from datetime import datetime
 import os
 import cloudinary
 import cloudinary.uploader
-@app.before_request
-def before_request():
-    update_last_seen()
 
 cloudinary.config(
     cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
@@ -16,6 +13,11 @@ cloudinary.config(
 )
 
 app = Flask(__name__)
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+@app.before_request
+def before_request():
+    update_last_seen()
 app.config['SECRET_KEY'] = 'peer2peer_encg_secret_key_2024'
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
