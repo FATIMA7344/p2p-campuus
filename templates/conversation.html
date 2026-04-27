@@ -6,9 +6,12 @@
         <a href="{{ url_for('messages') }}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
         <div class="conv-avatar">{{ contact.prenom[0] }}{{ contact.nom[0] }}</div>
         <div class="conv-info">
-            <div class="conv-name">{{ contact.prenom }} {{ contact.nom }}</div>
-            <div class="conv-sub">{{ contact.filiere }} – {{ contact.annee_etude }}</div>
-        </div>
+    <div class="conv-name">{{ contact.prenom }} {{ contact.nom }}</div>
+    <div class="conv-sub" id="statutContact">
+        <span class="statut-dot" id="statutDot"></span>
+        <span id="statutTexte">Chargement...</span>
+    </div>
+</div>
         <a href="{{ url_for('profil', user_id=contact.id) }}" class="btn btn-sm btn-secondary">Voir le profil</a>
     </div>
 
@@ -67,5 +70,22 @@ window.onload = function() {
     const chat = document.getElementById('chatArea');
     if (chat) chat.scrollTop = chat.scrollHeight;
 };
+</script>
+{% endblock %}
+<script>
+function updateStatut() {
+    fetch('/api/statut/{{ contact.id }}')
+        .then(r => r.json())
+        .then(data => {
+            const dot = document.getElementById('statutDot');
+            const texte = document.getElementById('statutTexte');
+            if (dot && texte) {
+                dot.className = 'statut-dot ' + (data.en_ligne ? 'online' : 'offline');
+                texte.textContent = data.statut;
+            }
+        });
+}
+updateStatut();
+setInterval(updateStatut, 30000);
 </script>
 {% endblock %}
