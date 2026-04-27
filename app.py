@@ -5,6 +5,9 @@ from datetime import datetime
 import os
 import cloudinary
 import cloudinary.uploader
+@app.before_request
+def before_request():
+    update_last_seen()
 
 cloudinary.config(
     cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
@@ -47,7 +50,8 @@ class User(db.Model):
     total_gagne = db.Column(db.Integer, default=0)
     total_depense = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    
     competences = db.relationship('Competence', backref='user', lazy=True, cascade='all, delete-orphan')
     missions_postees = db.relationship('Mission', backref='auteur', lazy=True, cascade='all, delete-orphan')
     evaluations_recues = db.relationship('Evaluation', foreign_keys='Evaluation.evalue_id', backref='evalue', lazy=True)
@@ -119,6 +123,12 @@ def current_user():
     if 'user_id' in session:
         return User.query.get(session['user_id'])
     return None
+def update_last_seen():
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+        if user:
+            user.last_seen = datetime.utcnow()
+            db.session.commit()
 
 def login_required(f):
     from functools import wraps
@@ -445,6 +455,27 @@ def lire_notifications():
     return redirect(request.referrer or url_for('accueil'))
 # ─── INIT DB ────────────────────────────────────────────────────────────────
 
+@app.route('/api/statut/<int:user_id>')
+@login_required
+def statut_utilisateur(user_id):
+    u = User.query.get_or_404(user_id)
+    if u.last_seen:
+        diff = datetime.utcnow() - u.last_seen
+        secondes = diff.total_seconds()
+        if secondes < 300:
+            statut = 'en ligne'
+        elif secondes < 3600:
+            minutes = int(secondes / 60)
+            statut = f'vu il y a {minutes} min'
+        elif secondes < 86400:
+            heures = int(secondes / 3600)
+            statut = f'vu il y a {heures}h'
+        else:
+            jours = int(secondes / 86400)
+            statut = f'vu il y a {jours}j'
+    else:
+        statut = 'hors ligne'
+    return jsonify({'statut': statut, 'en_ligne': secondes < 300 if u.last_seen else False})
 @app.cli.command('init-db')
 def init_db():
     db.create_all()
