@@ -12,6 +12,23 @@
                 <span><i class="fas fa-calendar"></i> {{ profil_user.annee_etude }}</span>
                 <span><i class="fas fa-envelope"></i> {{ profil_user.email }}</span>
             </div>
+        <div class="statut-ligne" id="statutProfil">
+    <span class="statut-dot" id="statutDotProfil"></span>
+    <span id="statutTexteProfil">Chargement...</span>
+</div>
+
+<script>
+fetch('/api/statut/{{ profil_user.id }}')
+    .then(r => r.json())
+    .then(data => {
+        const dot = document.getElementById('statutDotProfil');
+        const texte = document.getElementById('statutTexteProfil');
+        if (dot && texte) {
+            dot.className = 'statut-dot ' + (data.en_ligne ? 'online' : 'offline');
+            texte.textContent = data.statut;
+        }
+    });
+</script>            
             {% if avg_note > 0 %}
             <div class="profil-stars">
                 {% for i in range(1, 6) %}
