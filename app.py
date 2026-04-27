@@ -13,11 +13,6 @@ cloudinary.config(
 )
 
 app = Flask(__name__)
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-@app.before_request
-def before_request():
-    update_last_seen()
 app.config['SECRET_KEY'] = 'peer2peer_encg_secret_key_2024'
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
@@ -29,6 +24,10 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
+
+@app.before_request
+def before_request():
+    update_last_seen()
 
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'docx', 'zip', 'mp4', 'avi'}
 
