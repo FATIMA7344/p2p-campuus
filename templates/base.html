@@ -86,3 +86,8 @@ window.addEventListener('load', function() {
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
+
+
+<a href="{{ url_for('meets') }}" class="nav-item {% if request.endpoint in ('meets', 'rejoindre_meet') %}active{% endif %}">
+    <i class="fas fa-video"></i><span>Meets</span>
+</a>
