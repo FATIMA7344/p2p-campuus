@@ -144,11 +144,11 @@ class MeetParticipant(db.Model):
 
 def current_user():
     if 'user_id' in session:
-        return User.query.get(session['user_id'])
+        return db.session.get(User, session['user_id'])
     return None
 def update_last_seen():
     if 'user_id' in session:
-        user = User.query.get(session['user_id'])
+        user = db.session.get(User, session['user_id'])
         if user:
             user.last_seen = datetime.utcnow()
             db.session.commit()
