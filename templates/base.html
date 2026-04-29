@@ -49,7 +49,10 @@ window.addEventListener('load', function() {
             <a href="{{ url_for('wallet') }}" class="nav-item {% if request.endpoint == 'wallet' %}active{% endif %}">
                 <i class="fas fa-wallet"></i><span>Wallet</span>
             </a>
-        <a href="{{ url_for('notifications') }}" class="nav-item {% if request.endpoint == 'notifications' %}active{% endif %}">
+            <a href="{{ url_for('meets') }}" class="nav-item {% if request.endpoint in ('meets', 'rejoindre_meet') %}active{% endif %}">
+    <i class="fas fa-video"></i><span>Meets</span>
+</a>
+            <a href="{{ url_for('notifications') }}" class="nav-item {% if request.endpoint == 'notifications' %}active{% endif %}">
     <i class="fas fa-bell"></i><span>Notifications</span>
     {% if notifs and notifs > 0 %}
     <span class="badge">{{ notifs }}</span>
@@ -85,8 +88,5 @@ window.addEventListener('load', function() {
 {% endif %}
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
-<a href="{{ url_for('meets') }}" class="nav-item {% if request.endpoint in ('meets', 'rejoindre_meet') %}active{% endif %}">
-    <i class="fas fa-video"></i><span>Meets</span>
-</a>
 </body>
 </html>
