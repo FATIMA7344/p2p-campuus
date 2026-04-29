@@ -118,6 +118,28 @@ class Evaluation(db.Model):
     commentaire = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class Meet(db.Model):
+    __tablename__ = 'meets'
+    id = db.Column(db.Integer, primary_key=True)
+    organisateur_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    titre = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, default='')
+    date_meet = db.Column(db.DateTime, nullable=False)
+    room_id = db.Column(db.String(100), unique=True, nullable=False)
+    statut = db.Column(db.String(20), default='planifie')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    organisateur = db.relationship('User', foreign_keys=[organisateur_id])
+
+class MeetParticipant(db.Model):
+    __tablename__ = 'meet_participants'
+    id = db.Column(db.Integer, primary_key=True)
+    meet_id = db.Column(db.Integer, db.ForeignKey('meets.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    statut = db.Column(db.String(20), default='invite')
+    meet = db.relationship('Meet', backref='participants')
+    user = db.relationship('User', foreign_keys=[user_id])
+
+
 # ─── HELPERS ────────────────────────────────────────────────────────────────
 
 def current_user():
@@ -486,3 +508,107 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
+
+import uuid
+
+@app.route('/meets')
+@login_required
+def meets():
+    user = current_user()
+    notifs = Notification.query.filter_by(user_id=user.id, lu=False).count()
+    now = datetime.utcnow()
+    # Meets organisés par l'utilisateur
+    mes_meets = Meet.query.filter_by(organisateur_id=user.id).all()
+    # Meets où l'utilisateur est participant
+    participations = MeetParticipant.query.filter_by(user_id=user.id).all()
+    meet_ids = [p.meet_id for p in participations]
+    meets_invites = Meet.query.filter(Meet.id.in_(meet_ids)).all()
+    # Combiner et dédupliquer
+    tous_meets = list({m.id: m for m in mes_meets + meets_invites}.values())
+    tous_meets.sort(key=lambda x: x.date_meet)
+    meets_en_cours = [m for m in tous_meets if m.statut == 'en_cours']
+    meets_a_venir = [m for m in tous_meets if m.statut == 'planifie' and m.date_meet > now]
+    meets_termines = [m for m in tous_meets if m.statut == 'termine' or m.date_meet < now]
+    return render_template('meets.html', user=user, notifs=notifs,
+                           meets_en_cours=meets_en_cours,
+                           meets_a_venir=meets_a_venir,
+                           meets_termines=meets_termines,
+                           now=now)
+
+@app.route('/meets/creer', methods=['POST'])
+@login_required
+def creer_meet():
+    user = current_user()
+    titre = request.form.get('titre', '').strip()
+    description = request.form.get('description', '').strip()
+    date_str = request.form.get('date_meet', '')
+    participants_ids = request.form.getlist('participants')
+    try:
+        date_meet = datetime.strptime(date_str, '%Y-%m-%dT%H:%M')
+    except:
+        flash('Date invalide.', 'danger')
+        return redirect(url_for('meets'))
+    room_id = str(uuid.uuid4())[:8] + '-encg-p2p'
+    meet = Meet(organisateur_id=user.id, titre=titre,
+                description=description, date_meet=date_meet,
+                room_id=room_id)
+    db.session.add(meet)
+    db.session.flush()
+    # Ajouter l'organisateur comme participant
+    p = MeetParticipant(meet_id=meet.id, user_id=user.id, statut='accepte')
+    db.session.add(p)
+    # Ajouter les autres participants
+    for pid in participants_ids:
+        p = MeetParticipant(meet_id=meet.id, user_id=int(pid), statut='invite')
+        db.session.add(p)
+        # Envoyer notification
+        notif = Notification(
+            user_id=int(pid),
+            message=f"{user.prenom} {user.nom} vous invite à un Meet : '{titre}' le {date_meet.strftime('%d/%m/%Y à %H:%M')}"
+        )
+        db.session.add(notif)
+    db.session.commit()
+    flash('Meet créé avec succès !', 'success')
+    return redirect(url_for('meets'))
+
+@app.route('/meets/rejoindre/<int:meet_id>')
+@login_required
+def rejoindre_meet(meet_id):
+    user = current_user()
+    notifs = Notification.query.filter_by(user_id=user.id, lu=False).count()
+    meet = Meet.query.get_or_404(meet_id)
+    # Vérifier que l'utilisateur est participant
+    participation = MeetParticipant.query.filter_by(
+        meet_id=meet_id, user_id=user.id).first()
+    if not participation and meet.organisateur_id != user.id:
+        flash('Vous n\'êtes pas invité à ce Meet.', 'danger')
+        return redirect(url_for('meets'))
+    # Mettre à jour le statut
+    if meet.statut == 'planifie':
+        meet.statut = 'en_cours'
+        db.session.commit()
+    return render_template('meet_room.html', user=user,
+                           meet=meet, notifs=notifs)
+
+@app.route('/meets/terminer/<int:meet_id>')
+@login_required
+def terminer_meet(meet_id):
+    user = current_user()
+    meet = Meet.query.get_or_404(meet_id)
+    if meet.organisateur_id == user.id:
+        meet.statut = 'termine'
+        db.session.commit()
+        flash('Meet terminé.', 'info')
+    return redirect(url_for('meets'))
+
+@app.route('/meets/supprimer/<int:meet_id>')
+@login_required
+def supprimer_meet(meet_id):
+    user = current_user()
+    meet = Meet.query.get_or_404(meet_id)
+    if meet.organisateur_id == user.id:
+        MeetParticipant.query.filter_by(meet_id=meet_id).delete()
+        db.session.delete(meet)
+        db.session.commit()
+        flash('Meet supprimé.', 'info')
+    return redirect(url_for('meets'))
