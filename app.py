@@ -499,16 +499,6 @@ def statut_utilisateur(user_id):
     else:
         statut = 'hors ligne'
     return jsonify({'statut': statut, 'en_ligne': secondes < 300 if u.last_seen else False})
-@app.cli.command('init-db')
-def init_db():
-    db.create_all()
-    print('Base de données initialisée.')
-
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
-
 import uuid
 
 @app.route('/meets')
@@ -612,3 +602,13 @@ def supprimer_meet(meet_id):
         db.session.commit()
         flash('Meet supprimé.', 'info')
     return redirect(url_for('meets'))
+
+@app.cli.command('init-db')
+def init_db():
+    db.create_all()
+    print('Base de données initialisée.')
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
