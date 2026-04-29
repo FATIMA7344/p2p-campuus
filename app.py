@@ -499,6 +499,7 @@ def statut_utilisateur(user_id):
     else:
         statut = 'hors ligne'
     return jsonify({'statut': statut, 'en_ligne': secondes < 300 if u.last_seen else False})
+
 import uuid
 
 @app.route('/meets')
