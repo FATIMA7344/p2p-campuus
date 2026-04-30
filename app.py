@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import cloudinary
 import cloudinary.uploader
@@ -37,6 +37,7 @@ bcrypt = Bcrypt(app)
 @app.before_request
 def before_request():
     update_last_seen()
+    nettoyer_meets()
 
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'docx', 'zip', 'mp4', 'avi'}
 
@@ -162,6 +163,20 @@ def update_last_seen():
         if user:
             user.last_seen = datetime.utcnow()
             db.session.commit()
+def nettoyer_meets():
+    try:
+        limite = datetime.utcnow() - timedelta(weeks=2)
+        vieux_meets = Meet.query.filter(
+            Meet.statut == 'termine',
+            Meet.date_meet < limite
+        ).all()
+        for m in vieux_meets:
+            MeetParticipant.query.filter_by(meet_id=m.id).delete()
+            db.session.delete(m)
+        if vieux_meets:
+            db.session.commit()
+    except:
+        pass
 
 def envoyer_email(destinataire, sujet, corps):
     try:
