@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 import os
 import cloudinary
 import cloudinary.uploader
-from flask_mail import Mail, Message as MailMessage
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
 
 cloudinary.config(
     cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
@@ -22,14 +23,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_EMAIL')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_EMAIL')
 
-mail = Mail(app)
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -180,14 +174,20 @@ def nettoyer_meets():
 
 def envoyer_email(destinataire, sujet, corps):
     try:
-        msg = MailMessage(
-            subject=sujet,
-            recipients=[destinataire],
-            html=corps
+        configuration = sib_api_v3_sdk.Configuration()
+        configuration.api_key['api-key'] = os.environ.get('BREVO_API_KEY')
+        api_instance = sib_api_v3_sdk.TransactionalEmailsApi(
+            sib_api_v3_sdk.ApiClient(configuration)
         )
-        mail.send(msg)
-    except Exception as e:
-        print(f"Erreur email: {e}")
+        send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
+            to=[{"email": destinataire}],
+            sender={"email": os.environ.get('MAIL_EMAIL'), "name": "Peer2Peer Campus"},
+            subject=sujet,
+            html_content=corps
+        )
+        api_instance.send_transac_email(send_smtp_email)
+    except ApiException as e:
+        print(f"Erreur email Brevo: {e}")
 
 def login_required(f):
     from functools import wraps
