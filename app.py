@@ -355,7 +355,7 @@ def publier_mission():
     db.session.add(m)
     db.session.commit()
     tous_users = User.query.filter(User.id != user.id).all()
-        for u in tous_users:
+    for u in tous_users:
             corps_email = f"""
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="background: #e8821e; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
