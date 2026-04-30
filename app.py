@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 import cloudinary
 import cloudinary.uploader
+from flask_mail import Mail, Message as MailMessage
 
 cloudinary.config(
     cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
@@ -21,6 +22,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_EMAIL')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_EMAIL')
+
+mail = Mail(app)
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -33,6 +42,7 @@ ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'docx', 'zip', 'mp4', 'avi'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 # ─── MODELS ─────────────────────────────────────────────────────────────────
 
@@ -152,6 +162,17 @@ def update_last_seen():
         if user:
             user.last_seen = datetime.utcnow()
             db.session.commit()
+
+def envoyer_email(destinataire, sujet, corps):
+    try:
+        msg = MailMessage(
+            subject=sujet,
+            recipients=[destinataire],
+            html=corps
+        )
+        mail.send(msg)
+    except Exception as e:
+        print(f"Erreur email: {e}")
 
 def login_required(f):
     from functools import wraps
