@@ -354,12 +354,11 @@ def publier_mission():
                 type_mission=type_mission, competence=competence, credits=credits)
     db.session.add(m)
     db.session.commit()
-    # Envoyer email à tous les utilisateurs
-tous_users = User.query.filter(User.id != user.id).all()
-for u in tous_users:
-    corps_email = f"""
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: #e8821e; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+    tous_users = User.query.filter(User.id != user.id).all()
+        for u in tous_users:
+            corps_email = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: #e8821e; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
             <h1 style="color: white; margin: 0;">🎓 Peer2Peer Campus</h1>
             <p style="color: white; margin: 5px 0;">ENCG Marrakech</p>
         </div>
@@ -383,11 +382,11 @@ for u in tous_users:
         </div>
     </div>
     """
-    envoyer_email(
-        u.email,
-        f"🎯 Nouvelle {'offre' if type_mission == 'offre' else 'demande'} : {titre}",
-        corps_email
-    )
+           envoyer_email(
+               u.email,
+               f"🎯 Nouvelle {'offre' if type_mission == 'offre' else 'demande'} : {titre}",
+               corps_email
+            )
     flash('Mission publiée avec succès !', 'success')
     return redirect(url_for('missions'))
 
