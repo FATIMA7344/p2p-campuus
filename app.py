@@ -5,8 +5,7 @@ from datetime import datetime, timedelta
 import os
 import cloudinary
 import cloudinary.uploader
-import sib_api_v3_sdk
-from sib_api_v3_sdk.rest import ApiException
+
 
 cloudinary.config(
     cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
