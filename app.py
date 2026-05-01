@@ -371,42 +371,45 @@ def publier_mission():
                 type_mission=type_mission, competence=competence, credits=credits)
     db.session.add(m)
     db.session.commit()
-# Envoyer email à tous les utilisateurs sauf l'auteur
-tous_users = User.query.filter(User.id != user.id).all()
-emails_envoyes = set()  # Pour éviter les doublons
-for u in tous_users:
-    if u.email not in emails_envoyes:
-        emails_envoyes.add(u.email)
-        corps_email = f"""
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: #e8821e; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
-                <h1 style="color: white; margin: 0;">🎓 Peer2Peer Campus</h1>
-                <p style="color: white; margin: 5px 0;">ENCG Marrakech</p>
-            </div>
-            <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
-                <h2 style="color: #1a7a4a;">Nouvelle {"offre" if type_mission == "offre" else "demande"} publiée !</h2>
-                <p>Bonjour <strong>{u.prenom}</strong>,</p>
-                <p><strong>{user.prenom} {user.nom}</strong> vient de publier :</p>
-                <div style="background: white; border-left: 4px solid #e8821e; padding: 15px; margin: 20px 0; border-radius: 5px;">
-                    <h3 style="color: #e8821e; margin: 0 0 10px 0;">📋 {titre}</h3>
-                    <p style="color: #666; margin: 5px 0;">🏷️ Compétence : <strong>{competence}</strong></p>
-                    <p style="color: #666; margin: 5px 0;">💰 Crédits : <strong>{credits}</strong></p>
+    tous_users = User.query.filter(User.id != user.id).all()
+    emails_envoyes = set()
+    for u in tous_users:
+        if u.email not in emails_envoyes:
+            emails_envoyes.add(u.email)
+            corps_email = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: #e8821e; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+                    <h1 style="color: white; margin: 0;">🎓 Peer2Peer Campus</h1>
+                    <p style="color: white; margin: 5px 0;">ENCG Marrakech</p>
                 </div>
-                <a href="https://p2p-campuus-production.up.railway.app/missions"
-                   style="display: inline-block; background: #1a7a4a; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                    Voir la mission →
-                </a>
+                <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                    <h2 style="color: #1a7a4a;">Nouvelle {"offre" if type_mission == "offre" else "demande"} publiée !</h2>
+                    <p>Bonjour <strong>{u.prenom}</strong>,</p>
+                    <p><strong>{user.prenom} {user.nom}</strong> vient de publier :</p>
+                    <div style="background: white; border-left: 4px solid #e8821e; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                        <h3 style="color: #e8821e; margin: 0 0 10px 0;">📋 {titre}</h3>
+                        <p style="color: #666; margin: 5px 0;">🏷️ Compétence : <strong>{competence}</strong></p>
+                        <p style="color: #666; margin: 5px 0;">💰 Crédits : <strong>{credits}</strong></p>
+                        <p style="color: #444; margin: 10px 0;">{description[:150]}</p>
+                    </div>
+                    <a href="https://p2p-campuus-production.up.railway.app/missions"
+                       style="display: inline-block; background: #1a7a4a; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+                        Voir la mission →
+                    </a>
+                    <p style="color: #999; font-size: 12px; margin-top: 20px;">
+                        Vous recevez cet email car vous êtes inscrit sur Peer2Peer Campus ENCG Marrakech.
+                    </p>
+                </div>
             </div>
-        </div>
-        """
-        envoyer_email(
-            u.email,
-            f"🎯 Nouvelle {'offre' if type_mission == 'offre' else 'demande'} : {titre}",
-            corps_email
-        )
-    
+            """
+            envoyer_email(
+                u.email,
+                f"🎯 Nouvelle {'offre' if type_mission == 'offre' else 'demande'} : {titre}",
+                corps_email
+            )
     flash('Mission publiée avec succès !', 'success')
     return redirect(url_for('missions'))
+
 @app.route('/mission/supprimer/<int:mid>')
 @login_required
 def supprimer_mission(mid):
