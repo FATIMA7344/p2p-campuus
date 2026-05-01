@@ -174,24 +174,23 @@ def nettoyer_meets():
 
 def envoyer_email(destinataire, sujet, corps):
     try:
+        import requests
         brevo_key = os.environ.get('BREVO_API_KEY')
         if not brevo_key:
-            print("BREVO_API_KEY non configurée")
             return
-        configuration = sib_api_v3_sdk.Configuration()
-        configuration.api_key['api-key'] = brevo_key
-        api_instance = sib_api_v3_sdk.TransactionalEmailsApi(
-            sib_api_v3_sdk.ApiClient(configuration)
-        )
-        send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
-            to=[{"email": destinataire}],
-            sender={"email": os.environ.get('MAIL_EMAIL', 'p2pcampus.encg@gmail.com'), "name": "Peer2Peer Campus"},
-            subject=sujet,
-            html_content=corps
-        )
-        api_instance.send_transac_email(send_smtp_email)
-    except ApiException as e:
-        print(f"Erreur email Brevo: {e}")
+        url = "https://api.brevo.com/v3/smtp/email"
+        headers = {
+            "accept": "application/json",
+            "api-key": brevo_key,
+            "content-type": "application/json"
+        }
+        data = {
+            "sender": {"name": "Peer2Peer Campus", "email": os.environ.get('MAIL_EMAIL')},
+            "to": [{"email": destinataire}],
+            "subject": sujet,
+            "htmlContent": corps
+        }
+        requests.post(url, json=data, headers=headers)
     except Exception as e:
         print(f"Erreur email: {e}")
 
