@@ -769,9 +769,33 @@ a { color: inherit; text-decoration: none; }
     border-radius: var(--radius);
     padding: 1.5rem;
     text-align: center;
-    border: 1px solid var(--border);
-    border-top: 3px solid var(--primary);
+    border: 2px solid var(--primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(26, 122, 74, 0.15);
+    transition: transform 0.2s;
 }
+.stat-item:hover {
+    transform: translateY(-3px);
+}
+.stat-item i {
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--accent);
+}
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-top: 0.3rem;
+}
+
 .stat-number {
     font-size: 2.5rem;
     font-weight: 800;
