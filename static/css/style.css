@@ -897,3 +897,15 @@ a { color: inherit; text-decoration: none; }
     display: inline-block;
     transition: all 0.3s ease;
 }
+/* ── Cards qui se soulèvent au survol ───────────────────────────── */
+.wcard, .mission-card, .contact-item, .wallet-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.wcard:hover, .mission-card:hover, .wallet-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+.contact-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
