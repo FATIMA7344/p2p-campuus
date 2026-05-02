@@ -299,6 +299,38 @@ def verify_email(token):
     flash(f'Bienvenue {user.prenom} ! Votre compte est activé 🎉', 'success')
     return redirect(url_for('accueil'))
 
+@app.route('/renvoyer-verification', methods=['GET', 'POST'])
+def renvoyer_verification():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        user = User.query.filter_by(email=email).first()
+        if user and not user.email_verifie:
+            token = str(uuid.uuid4())
+            user.token_verification = token
+            db.session.commit()
+            lien = f"https://p2p-campuus-production.up.railway.app/verify/{token}"
+            corps = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: #e8821e; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+                    <h1 style="color: white;">🎓 Peer2Peer Campus</h1>
+                </div>
+                <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                    <h2 style="color: #1a7a4a;">Nouveau lien de vérification</h2>
+                    <p>Bonjour <strong>{user.prenom}</strong>,</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="{lien}"
+                           style="background: #1a7a4a; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+                            ✅ Vérifier mon email
+                        </a>
+                    </div>
+                </div>
+            </div>
+            """
+            envoyer_email(email, "✅ Nouveau lien – Peer2Peer Campus", corps)
+        flash('Si cet email existe, un lien a été envoyé.', 'info')
+        return redirect(url_for('login'))
+    return render_template('renvoyer_verification.html')
+
 @app.route('/logout')
 def logout():
     session.clear()
