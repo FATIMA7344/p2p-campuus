@@ -219,6 +219,9 @@ def login():
         password = request.form.get('password', '')
         user = User.query.filter_by(email=email).first()
         if user and bcrypt.check_password_hash(user.password, password):
+            if not user.email_verifie:
+                flash('Veuillez vérifier votre email avant de vous connecter.', 'warning')
+                return render_template('login.html')
             session['user_id'] = user.id
             flash('Connexion réussie !', 'success')
             return redirect(url_for('accueil'))
@@ -244,14 +247,57 @@ def register():
             return render_template('register.html')
 
         hashed = bcrypt.generate_password_hash(password).decode('utf-8')
+        token = str(uuid.uuid4())
         user = User(nom=nom, prenom=prenom, email=email, password=hashed,
-                    annee_etude=annee, filiere=filiere, credits=50)
+                    annee_etude=annee, filiere=filiere, credits=50,
+                    email_verifie=False, token_verification=token)
         db.session.add(user)
         db.session.commit()
-        session['user_id'] = user.id
-        flash('Compte créé avec succès ! 50 crédits offerts.', 'success')
-        return redirect(url_for('accueil'))
+
+        # Envoyer email de vérification
+        lien = f"https://p2p-campuus-production.up.railway.app/verify/{token}"
+        corps = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: #e8821e; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="color: white; margin: 0;">🎓 Peer2Peer Campus</h1>
+                <p style="color: white;">ENCG Marrakech</p>
+            </div>
+            <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                <h2 style="color: #1a7a4a;">Vérifiez votre email !</h2>
+                <p>Bonjour <strong>{prenom}</strong>,</p>
+                <p>Merci de vous être inscrit sur Peer2Peer Campus. Cliquez sur le bouton ci-dessous pour vérifier votre email et activer votre compte.</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{lien}"
+                       style="background: #1a7a4a; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1rem;">
+                        ✅ Vérifier mon email
+                    </a>
+                </div>
+                <p style="color: #999; font-size: 12px;">
+                    Ce lien expire dans 24 heures. Si vous n'avez pas créé de compte, ignorez cet email.
+                </p>
+            </div>
+        </div>
+        """
+        envoyer_email(email, "✅ Vérifiez votre email – Peer2Peer Campus", corps)
+        flash('Compte créé ! Vérifiez votre email pour activer votre compte.', 'success')
+        return redirect(url_for('login'))
     return render_template('register.html')
+
+@app.route('/verify/<token>')
+def verify_email(token):
+    user = User.query.filter_by(token_verification=token).first()
+    if not user:
+        flash('Lien de vérification invalide ou expiré.', 'danger')
+        return redirect(url_for('login'))
+    if user.email_verifie:
+        flash('Email déjà vérifié !', 'info')
+        return redirect(url_for('login'))
+    user.email_verifie = True
+    user.token_verification = None
+    db.session.commit()
+    session['user_id'] = user.id
+    flash(f'Bienvenue {user.prenom} ! Votre compte est activé 🎉', 'success')
+    return redirect(url_for('accueil'))
 
 @app.route('/logout')
 def logout():
