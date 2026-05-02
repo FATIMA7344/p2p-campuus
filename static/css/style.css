@@ -892,3 +892,8 @@ a { color: inherit; text-decoration: none; }
     border-radius: 0 0 var(--radius) var(--radius);
     overflow: hidden;
 }
+/* ── Compteur animé ─────────────────────────────────────────────── */
+.stat-number {
+    display: inline-block;
+    transition: all 0.3s ease;
+}
