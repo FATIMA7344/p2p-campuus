@@ -54,6 +54,8 @@ class User(db.Model):
     total_gagne = db.Column(db.Integer, default=0)
     total_depense = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    email_verifie = db.Column(db.Boolean, default=False)
+    token_verification = db.Column(db.String(100), unique=True)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     
     competences = db.relationship('Competence', backref='user', lazy=True, cascade='all, delete-orphan')
