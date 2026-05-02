@@ -62,4 +62,33 @@
     </div>
 
 </div>
+
+<script>
+function animerCompteur(element, debut, fin, duree) {
+    let startTime = null;
+    function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duree, 1);
+        const valeur = Math.floor(progress * (fin - debut) + debut);
+        element.textContent = valeur;
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        }
+    }
+    window.requestAnimationFrame(step);
+}
+
+window.addEventListener('load', function() {
+    const etudiants = document.getElementById('countEtudiants');
+    const missions = document.getElementById('countMissions');
+    
+    if (etudiants) {
+        animerCompteur(etudiants, 0, {{ total_etudiants }}, 2000);
+    }
+    if (missions) {
+        animerCompteur(missions, 0, {{ total_missions }}, 2000);
+    }
+});
+</script>
+{% endblock %}
 {% endblock %}
